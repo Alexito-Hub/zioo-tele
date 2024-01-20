@@ -1,6 +1,5 @@
 require('dotenv').config();
 const TelegramBot = require('node-telegram-bot-api');
-const axios = require('axios');
 
 const botToken = process.env.BOT_TOKEN;
 
@@ -9,42 +8,106 @@ if (!botToken) {
   process.exit(1);
 }
 
-// Función para realizar solicitudes a la API de TikTok
-exports.fetchJson = async (url, options = {}) => {
-  try {
-    options = options || {};
-    const res = await axios({
-      method: 'GET',
-      url: url,
-      headers: {
-        'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/95.0.4638.69 Safari/537.36'
-      },
-      ...options
-    });
-    return res.data;
-  } catch (err) {
-    return err;
-  }
-};
-
 const bot = new TelegramBot(botToken, { polling: true });
 
-bot.onText(/^\/tiktok (.+)/, async (msg, match) => {
+const groupConfigurations = {};
+
+bot.onText(/\/start/, (msg) => {
   const chatId = msg.chat.id;
-  const tiktokUrl = match[1];
+  const options = {
+    reply_markup: {
+      inline_keyboard: [
+        [
+          { text: 'Menu', callback_data: 'Menu' },
+          { text: 'Juegos', callback_data: 'Juegos' }
+        ],
+        [
+          { text: 'Configuration', callback_data: 'Configuration' }
+        ]
+      ]
+    }
+  };
 
-  // Construir la URL completa para la API de TikTok
-  const apiUrl = `https://iam-zio.replit.app/api/tiktok?key=zio&url=${encodeURIComponent(tiktokUrl)}`;
+  bot.sendMessage(chatId, '¡Hola! Soy tu bot de Telegram.', options);
+});
 
-  try {
-    // Obtener datos de la API de TikTok
-    const tiktokData = await exports.fetchJson(apiUrl);
+bot.on('callback_query', (callbackQuery) => {
+  const chatId = callbackQuery.message.chat.id;
+  const messageId = callbackQuery.message.message_id;
+  const data = callbackQuery.data;
 
-    // Procesar y enviar la información al usuario
-    const message = `**Autor:** ${tiktokData.result.author.name}\n**Título:** ${tiktokData.result.information.title}\n**Me gusta:** ${tiktokData.result.information.likeCount}\n**Reproducciones:** ${tiktokData.result.information.playCount}\n**Enlace de descarga:** [Descargar]( ${tiktokData.result.video.noWatermark} )`;
-    bot.sendMessage(chatId, message, { parse_mode: 'Markdown' });
-  } catch (error) {
-    console.error('Error al obtener datos de la API de TikTok:', error);
-    bot.sendMessage(chatId, 'Error al obtener datos de la API de TikTok. Por favor, inténtalo de nuevo más tarde.');
+  switch (data) {
+    case 'Menu':
+      bot.editMessageText('Nl se agregaron comandos a la lista de Menu', { chat_id: chatId, message_id: messageId });
+      break;
+    case 'Juegos':
+      bot.editMessageText('Los juegos no estan disponibles por el momento', { chat_id: chatId, message_id: messageId });
+      break;
+    case 'Configuration':
+      const buttonConfig = {
+        reply_markup: {
+          inline_keyboard: [
+            [
+              { text: 'Cambiar Nombre', callback_data: 'cambiarNombre' },
+              { text: 'Cambiar Descripción', callback_data: 'cambiarDescripcion' }
+            ]
+          ]
+        }
+      };
+      bot.editMessageText('Configuración del grupo:', { chat_id: chatId, message_id: messageId, ...buttonConfig });
+      break;
+    case 'cambiarNombre':
+      // Guarda el estado actual para la configuración del grupo
+      groupConfigurations[chatId] = { action: 'cambiarNombre' };
+      bot.sendMessage(chatId, 'Por favor, envía el nuevo nombre del grupo.');
+      break;
+    case 'cambiarDescripcion':
+      // Guarda el estado actual para la configuración del grupo
+      groupConfigurations[chatId] = { action: 'cambiarDescripcion' };
+      bot.sendMessage(chatId, 'Por favor, envía la nueva descripción del grupo.');
+      break;
+  }
+});
+
+
+bot.on('text', (msg) => {
+  const chatId = msg.chat.id;
+  const messageText = msg.text;
+
+  if (groupConfigurations[chatId]) {
+    const { action } = groupConfigurations[chatId];
+    
+    // Pide confirmación antes de realizar cambios
+    bot.sendMessage(chatId, `¿Estás seguro de cambiar ${action === 'cambiarNombre' ? 'el nombre' : 'la descripción'} a "${messageText}"?`, {
+      reply_markup: {
+        inline_keyboard: [
+          [
+            { text: 'Sí', callback_data: 'confirmar' },
+            { text: 'No', callback_data: 'cancelar' }
+          ]
+        ]
+      }
+    });
+  }
+});
+
+// Maneja las interacciones de los botones de confirmación
+bot.on('callback_query', (callbackQuery) => {
+  const chatId = callbackQuery.message.chat.id;
+  const messageId = callbackQuery.message.message_id;
+  const data = callbackQuery.data;
+
+  if (data === 'confirmar') {
+    // Realiza cambios en la configuración según la acción guardada
+    const { action } = groupConfigurations[chatId];
+    delete groupConfigurations[chatId];
+
+    // Aquí deberías implementar la lógica para cambiar el nombre o descripción del grupo
+
+    bot.editMessageText(`${action === 'cambiarNombre' ? 'Nombre' : 'Descripción'} cambiado con éxito.`, { chat_id: chatId, message_id: messageId });
+  } else if (data === 'cancelar') {
+    // Cancela la acción actual
+    delete groupConfigurations[chatId];
+    bot.editMessageText('Cambio cancelado.', { chat_id: chatId, message_id: messageId });
   }
 });
