@@ -40,8 +40,6 @@ bot.onText(/(.+)/, (msg) => {
         case 'help':
             bot.sendMessage(chatId, '¡Bienvenido! Puedes usar comandos como /start y otros.');
             break;
-        default:
-            bot.sendMessage(chatId, 'Comando no reconocido. ¡Prueba /ayuda para obtener ayuda!');
     }
 });
 
