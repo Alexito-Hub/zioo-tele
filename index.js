@@ -15,7 +15,7 @@ bot.onText(/(.+)/, (msg) => {
     const prefixes = global.prefix || ['/'];
     const isCmd = msg.text && prefixes.some(prefix => msg.text.toLowerCase().startsWith(prefix.toLowerCase()));
     const command = isCmd
-      ? msg.text.slice(prefixes.find(prefix => msg.text.toLowerCase().startsWith(prefix.toLowerCase()))).trim().split(' ')[0].toLowerCase()
+      ? msg.text.split(' ')[0].slice(prefixes.find(prefix => msg.text.toLowerCase().startsWith(prefix.toLowerCase())).length).toLowerCase()
       : msg.text.trim().split(' ')[0].toLowerCase();
 
     const chatId = msg.chat.id;
@@ -41,6 +41,8 @@ bot.onText(/(.+)/, (msg) => {
         case 'help':
             bot.sendMessage(chatId, '¡Bienvenido! Puedes usar comandos como /start y otros.');
             break;
+        default:
+            bot.sendMessage(chatId, 'Comando no reconocido. ¡Prueba /ayuda para obtener ayuda!');
     }
 });
 
