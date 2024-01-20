@@ -43,6 +43,31 @@ bot.onText(/(.+)/, (msg) => {
     } 
 });
 
+// ... (código previo)
+
+bot.onText(/(.+)/, async (msg) => {
+  const prefixes = global.prefix || ['/'];
+  const text = msg.text || '';
+  const isCmd = prefixes.some(prefix => text.toLowerCase().startsWith(prefix.toLowerCase()));
+
+  if (isCmd) {
+    const commandBody = text.slice(prefixes.find(prefix => text.toLowerCase().startsWith(prefix.toLowerCase())).length).trim();
+    const [commandName, ...commandArgs] = commandBody.split(/ +/);
+
+    const commandInfo = commands.find(cmd => cmd.commands.includes(commandName.toLowerCase()));
+    if (commandInfo) {
+      try {
+        await commandInfo.execute(bot, msg.chat.id, msg.message_id);
+      } catch (error) {
+        console.error('Error al ejecutar el comando:', error);
+      }
+    } else {
+      bot.sendMessage(msg.chat.id, 'Comando no reconocido. ¡Prueba /ayuda para obtener ayuda!');
+    }
+  }
+});
+
+// ... (código posterior)
 
 
 bot.on('callback_query', (callbackQuery) => {
