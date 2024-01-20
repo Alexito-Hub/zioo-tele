@@ -18,8 +18,8 @@ bot.onText(/\/start/, (msg) => {
     reply_markup: {
       inline_keyboard: [
         [
-          { text: 'Menu', callback_data: 'Menu' },
-          { text: 'Juegos', callback_data: 'Juegos' }
+          ,
+          {}
         ]
       ]
     }
@@ -29,10 +29,25 @@ bot.onText(/\/start/, (msg) => {
 });
 
 bot.onText(/\/(.+)/, (msg, match) => {
-  const chatId = msg.chat.id;
-  const command = match[1];
-
-  switch (command) {
+    const chatId = msg.chat.id;
+    const command = match[1];
+    switch (command) {
+        case 'start':
+            try {
+                bot.sendMessage(chatId, 'Hola usa /menu para obtener los comandos', { 
+                    reply_markup: { 
+                        inline_keyboard: [
+                            [
+                                { text: 'Menu', callback_data: 'Menu' },
+                                { text: 'Juegos', callback_data: 'Juegos' } 
+                            ]
+                        ]
+                    }
+                })
+            } catch (e) {
+                throw e
+            }
+            break
     case 'ayuda':
     case 'help':
       bot.sendMessage(chatId, '¡Bienvenido! Puedes usar comandos como /start y otros.');
