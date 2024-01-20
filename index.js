@@ -12,45 +12,49 @@ const bot = new TelegramBot(botToken, { polling: true });
 
 bot.onText(/\/start/, (msg) => {
   const chatId = msg.chat.id;
-
-  // Definir el teclado en línea con dos botones
-  const keyboard = {
-    inline_keyboard: [
-      [
-        { text: 'Botón 1', callback_data: 'button1' },
-        { text: 'Botón 2', callback_data: 'button2' }
+  const options = {
+    reply_markup: {
+      keyboard: [
+        ['Botón 1', 'Botón 2'],
+        ['Configuración'],
       ],
-      [
-        { text: 'Configuración', callback_data: 'settings' }
-      ]
-    ]
+      resize_keyboard: true,
+    },
   };
 
-  // Convertir el teclado en formato JSON
-  const replyMarkup = JSON.stringify(keyboard);
-
-  // Enviar el mensaje con el teclado en línea
-  bot.sendMessage(chatId, '¡Hola! Soy tu bot de Telegram.', { reply_markup: replyMarkup });
+  bot.sendMessage(chatId, '¡Hola! Soy tu bot de Telegram.', options);
 });
 
-// Manejar los eventos de los botones
+bot.onText(/Botón 1/, (msg) => {
+  const chatId = msg.chat.id;
+  bot.sendMessage(chatId, 'Has seleccionado Botón 1.');
+});
+
+bot.onText(/Botón 2/, (msg) => {
+  const chatId = msg.chat.id;
+  bot.sendMessage(chatId, 'Has seleccionado Botón 2.');
+});
+
+bot.onText(/Configuración/, (msg) => {
+  const chatId = msg.chat.id;
+  const options = {
+    reply_markup: {
+      inline_keyboard: [
+        [{ text: 'Opción 1', callback_data: 'opcion1' }],
+        [{ text: 'Opción 2', callback_data: 'opcion2' }],
+      ],
+    },
+  };
+
+  bot.sendMessage(chatId, 'Selecciona una opción de configuración:', options);
+});
+
 bot.on('callback_query', (query) => {
   const chatId = query.message.chat.id;
-  const data = query.data;
 
-  // Manejar la lógica según el botón presionado
-  switch (data) {
-    case 'button1':
-      bot.sendMessage(chatId, 'Presionaste el Botón 1');
-      break;
-    case 'button2':
-      bot.sendMessage(chatId, 'Presionaste el Botón 2');
-      break;
-    case 'settings':
-      bot.sendMessage(chatId, 'Aquí puedes configurar tu bot.');
-      break;
-    default:
-      // Manejar cualquier otro caso si es necesario
-      break;
+  if (query.data === 'opcion1') {
+    bot.editMessageText('Has seleccionado Opción 1.', { chat_id: chatId, message_id: query.message.message_id });
+  } else if (query.data === 'opcion2') {
+    bot.editMessageText('Has seleccionado Opción 2.', { chat_id: chatId, message_id: query.message.message_id });
   }
 });
