@@ -27,19 +27,31 @@ loadCommands();
 
 
 bot.onText(/(.+)/, (msg) => {
-    const prefixes = global.prefix || ['/'];
-    const isCmd = msg.text && prefixes.some(prefix => msg.text.toLowerCase().startsWith(prefix.toLowerCase()));
-    const command = isCmd
-        ? msg.text.split(' ')[0].slice(prefixes.find(prefix => msg.text.toLowerCase().startsWith(prefix.toLowerCase())).length).toLowerCase()
-        : msg.text.trim().split(' ')[0].toLowerCase();
-        
-    const chatId = msg.chat.id;
-    
-    const commandInfo = commands.find(cmd => cmd.commands.includes(command));
-    if (commandInfo) {
-        commandInfo.execute(bot, chatId);
+  const prefixes = global.prefix || ['/'];
+  const entities = msg.entities || [];
+  const hasMention = entities.some(entity => entity.type === 'mention' && entity.user.id === bot.me.id);
+  
+  let command = '';
+  if (msg.text) {
+    if (hasMention) {
+      // Si hay una mención al bot en el mensaje, extrae el comando después de la mención.
+      const mentionEndIndex = entities.find(entity => entity.type === 'mention' && entity.user.id === bot.me.id).offset + entities.find(entity => entity.type === 'mention' && entity.user.id === bot.me.id).length;
+      command = msg.text.slice(mentionEndIndex).trim().split(' ')[0].toLowerCase();
+    } else {
+      // Si no hay mención, extrae el comando normalmente.
+      command = msg.text.split(' ')[0].slice(prefixes.find(prefix => msg.text.toLowerCase().startsWith(prefix.toLowerCase())).length).toLowerCase();
     }
+  }
+
+  const chatId = msg.chat.id;
+
+  const commandInfo = commands.find(cmd => cmd.commands.includes(command));
+  if (commandInfo) {
+    commandInfo.execute(bot, chatId);
+  }
 });
+
+
 
 bot.on('callback_query', (callbackQuery) => {
     const chatId = callbackQuery.message.chat.id;
