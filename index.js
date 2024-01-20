@@ -3,45 +3,42 @@ require('dotenv').config();
 const TelegramBot = require('node-telegram-bot-api');
 const fs = require('fs')
 const path = require('path')
-
 const commands = [];
 
 const botToken = process.env.BOT_TOKEN;
 
 if (!botToken) {
-  console.log('No se proporcionó el token del bot. Asegúrate de establecer la variable de entorno BOT_TOKEN.');
-  process.exit(1);
+    console.log('No se proporcionó el token del bot. Asegúrate de establecer la variable de entorno BOT_TOKEN.');
+    process.exit(1);
 }
 
 const bot = new TelegramBot(botToken, { polling: true });
 
 function loadCommands() {
-  const commandFiles = fs.readdirSync(path.join(__dirname, 'commands')).filter(file => file.endsWith('.js'));
-
-  for (const file of commandFiles) {
-    const command = require(path.join(__dirname, 'commands', file));
-    commands.push(command);
-  }
+    const commandFiles = fs.readdirSync(path.join(__dirname, 'commands')).filter(file => file.endsWith('.js'));
+    
+    for (const file of commandFiles) {
+        const command = require(path.join(__dirname, 'commands', file));
+        commands.push(command);
+    }
 }
 
 loadCommands();
 
 
 bot.onText(/(.+)/, (msg) => {
-  const prefixes = global.prefix || ['/'];
-  const isCmd = msg.text && prefixes.some(prefix => msg.text.toLowerCase().startsWith(prefix.toLowerCase()));
-  const command = isCmd
-    ? msg.text.split(' ')[0].slice(prefixes.find(prefix => msg.text.toLowerCase().startsWith(prefix.toLowerCase())).length).toLowerCase()
-    : msg.text.trim().split(' ')[0].toLowerCase();
-
-  const chatId = msg.chat.id;
-
-  const commandInfo = commands.find(cmd => cmd.commands.includes(command));
-  if (commandInfo) {
-    commandInfo.execute(bot, chatId);
-  } else {
-    bot.sendMessage(chatId, 'Comando no reconocido. ¡Prueba /ayuda para obtener ayuda!');
-  }
+    const prefixes = global.prefix || ['/'];
+    const isCmd = msg.text && prefixes.some(prefix => msg.text.toLowerCase().startsWith(prefix.toLowerCase()));
+    const command = isCmd
+        ? msg.text.split(' ')[0].slice(prefixes.find(prefix => msg.text.toLowerCase().startsWith(prefix.toLowerCase())).length).toLowerCase()
+        : msg.text.trim().split(' ')[0].toLowerCase();
+        
+    const chatId = msg.chat.id;
+    
+    const commandInfo = commands.find(cmd => cmd.commands.includes(command));
+    if (commandInfo) {
+        commandInfo.execute(bot, chatId);
+    }
 });
 
 bot.on('callback_query', (callbackQuery) => {
