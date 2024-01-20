@@ -28,29 +28,19 @@ loadCommands();
 
 bot.onText(/(.+)/, (msg) => {
   const prefixes = global.prefix || ['/'];
-  const entities = msg.entities || [];
-  const hasMention = entities.some(entity => entity.type === 'mention' && entity.user.id === bot.me.id);
-  
-  let command = '';
-  if (msg.text) {
-    if (hasMention) {
-      // Si hay una mención al bot en el mensaje, extrae el comando después de la mención.
-      const mentionEndIndex = entities.find(entity => entity.type === 'mention' && entity.user.id === bot.me.id).offset + entities.find(entity => entity.type === 'mention' && entity.user.id === bot.me.id).length;
-      command = msg.text.slice(mentionEndIndex).trim().split(' ')[0].toLowerCase();
-    } else {
-      // Si no hay mención, extrae el comando normalmente.
-      command = msg.text.split(' ')[0].slice(prefixes.find(prefix => msg.text.toLowerCase().startsWith(prefix.toLowerCase())).length).toLowerCase();
+  const text = msg.text || '';
+  const isCmd = prefixes.some(prefix => text.toLowerCase().startsWith(prefix.toLowerCase()));
+
+  if (isCmd) {
+    const commandBody = text.slice(prefixes.find(prefix => text.toLowerCase().startsWith(prefix.toLowerCase())).length).trim();
+    const [commandName, ...commandArgs] = commandBody.split(/ +/);
+
+    const commandInfo = commands.find(cmd => cmd.commands.includes(commandName.toLowerCase()));
+    if (commandInfo) {
+      commandInfo.execute(bot, msg.chat.id);
     }
   }
-
-  const chatId = msg.chat.id;
-
-  const commandInfo = commands.find(cmd => cmd.commands.includes(command));
-  if (commandInfo) {
-    commandInfo.execute(bot, chatId);
-  }
 });
-
 
 
 bot.on('callback_query', (callbackQuery) => {
