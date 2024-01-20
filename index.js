@@ -1,3 +1,4 @@
+require('dotenv').config()
 const TelegramBot = require('node-telegram-bot-api');
 
 // Obtén el token desde la variable de entorno
