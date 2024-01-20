@@ -25,28 +25,23 @@ function loadCommands() {
 
 loadCommands();
 
-// ... (código anterior)
 
 bot.onText(/(.+)/, (msg) => {
-  const prefixes = global.prefix || ['/'];
-  const isCmd = msg.text && prefixes.some(prefix => msg.text.toLowerCase().startsWith(prefix.toLowerCase()));
-  let command = "";
-
-  if (isCmd) {
-    // Extraer el comando con o sin el nombre del bot
-    const commandMatch = msg.text.match(new RegExp(`(?:${prefixes.join('|')})\\s*@?${bot.me.username || bot.me.first_name}?\\s*(\\S+)`, 'i'));
-    command = commandMatch ? commandMatch[1].toLowerCase() : "";
-  }
-
-  const chatId = msg.chat.id;
-
-  const commandInfo = commands.find(cmd => cmd.commands.includes(command));
-  if (commandInfo) {
-    commandInfo.execute(bot, chatId);
-  } 
+    const prefixes = global.prefix || ['/'];
+    const isCmd = msg.text && prefixes.some(prefix => msg.text.toLowerCase().startsWith(prefix.toLowerCase()));
+    const command = isCmd
+      ? msg.text.split(' ')[0].slice(prefixes.find(prefix => msg.text.toLowerCase().startsWith(prefix.toLowerCase())).length).toLowerCase()
+      : msg.text.trim().split(' ')[0].toLowerCase();
+    
+    const chatId = msg.chat.id;
+    
+    const commandInfo = commands.find(cmd => cmd.commands.includes(command));
+    
+    if (commandInfo) {
+        commandInfo.execute(bot, chatId);
+        
+    } 
 });
-
-// ... (código posterior)
 
 
 
