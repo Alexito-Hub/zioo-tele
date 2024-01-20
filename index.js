@@ -10,31 +10,19 @@ if (!botToken) {
 
 const bot = new TelegramBot(botToken, { polling: true });
 
-const groupConfigurations = {};
+bot.onText(/(.+)/, (msg) => {
+    const prefixes = global.prefix || ['/'];
+    const isCmd = msg.text && prefixes.some(prefix => msg.text.toLowerCase().startsWith(prefix.toLowerCase()));
+    const command = isCmd
+      ? msg.text.slice(prefixes.find(prefix => msg.text.toLowerCase().startsWith(prefix.toLowerCase()))).trim().split(' ')[0].toLowerCase()
+      : msg.text.trim().split(' ')[0].toLowerCase();
 
-bot.onText(/\/start/, (msg) => {
-  const chatId = msg.chat.id;
-  const options = {
-    reply_markup: {
-      inline_keyboard: [
-        [
-          ,
-          {}
-        ]
-      ]
-    }
-  };
-
-  bot.sendMessage(chatId, '¡Hola! Soy tu bot de Telegram.', options);
-});
-
-bot.onText(/\/(.+)/, (msg, match) => {
     const chatId = msg.chat.id;
-    const command = match[1];
+
     switch (command) {
         case 'start':
             try {
-                bot.sendMessage(chatId, 'Hola usa /menu para obtener los comandos', { 
+                bot.sendMessage(chatId, 'Hola, usa /menu para obtener los comandos', { 
                     reply_markup: { 
                         inline_keyboard: [
                             [
@@ -43,32 +31,31 @@ bot.onText(/\/(.+)/, (msg, match) => {
                             ]
                         ]
                     }
-                })
+                });
             } catch (e) {
-                throw e
+                throw e;
             }
-            break
-    case 'ayuda':
-    case 'help':
-      bot.sendMessage(chatId, '¡Bienvenido! Puedes usar comandos como /start y otros.');
-      break;
-    default:
-      bot.sendMessage(chatId, 'Comando no reconocido. ¡Prueba /ayuda para obtener ayuda!');
-  }
+            break;
+        case 'ayuda':
+        case 'help':
+            bot.sendMessage(chatId, '¡Bienvenido! Puedes usar comandos como /start y otros.');
+            break;
+        default:
+            bot.sendMessage(chatId, 'Comando no reconocido. ¡Prueba /ayuda para obtener ayuda!');
+    }
 });
 
 bot.on('callback_query', (callbackQuery) => {
-  const chatId = callbackQuery.message.chat.id;
-  const messageId = callbackQuery.message.message_id;
-  const data = callbackQuery.data;
+    const chatId = callbackQuery.message.chat.id;
+    const messageId = callbackQuery.message.message_id;
+    const data = callbackQuery.data;
 
-  switch (data) {
-    case 'Menu':
-      bot.editMessageText('Nl se agregaron comandos a la lista de Menu', { chat_id: chatId, message_id: messageId });
-      break;
-    case 'Juegos':
-      bot.editMessageText('Los juegos no estan disponibles por el momento', { chat_id: chatId, message_id: messageId });
-      break;
-  }
+    switch (data) {
+        case 'Menu':
+            bot.editMessageText('No se agregaron comandos a la lista de Menu', { chat_id: chatId, message_id: messageId });
+            break;
+        case 'Juegos':
+            bot.editMessageText('Los juegos no están disponibles por el momento', { chat_id: chatId, message_id: messageId });
+            break;
+    }
 });
-
