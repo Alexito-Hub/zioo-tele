@@ -26,28 +26,24 @@ function loadCommands() {
 loadCommands();
 
 
-
-bot.onText(/(.+)/, async (msg) => {
-  const prefixes = global.prefix || ['/'];
-  const text = msg.text || '';
-  const isCmd = prefixes.some(prefix => text.toLowerCase().startsWith(prefix.toLowerCase()));
-
-  if (isCmd) {
-    const commandBody = text.slice(prefixes.find(prefix => text.toLowerCase().startsWith(prefix.toLowerCase())).length).trim();
-    const [commandName, ...commandArgs] = commandBody.split(/ +/);
-
-    const commandInfo = commands.find(cmd => cmd.commands.includes(commandName.toLowerCase()));
+bot.onText(/(.+)/, (msg) => {
+    const prefixes = global.prefix || ['/'];
+    const isCmd = msg.text && prefixes.some(prefix => msg.text.toLowerCase().startsWith(prefix.toLowerCase()));
+    const command = isCmd
+      ? msg.text.split(' ')[0].slice(prefixes.find(prefix => msg.text.toLowerCase().startsWith(prefix.toLowerCase())).length).toLowerCase()
+      : msg.text.trim().split(' ')[0].toLowerCase();
+    
+    const chatId = msg.chat.id;
+    const messageId = msg.message_id
+    
+    const commandInfo = commands.find(cmd => cmd.commands.includes(command));
+    
     if (commandInfo) {
-      try {
-        await commandInfo.execute(bot, msg.chat.id, msg.message_id);
-      } catch (error) {
-        console.error('Error al ejecutar el comando:', error);
-      }
+        commandInfo.execute(bot, chatId, messageId);
+        
     }
-  }
 });
 
-// ... (código posterior)
 
 
 bot.on('callback_query', (callbackQuery) => {
