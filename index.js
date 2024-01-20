@@ -11,39 +11,33 @@ if (!botToken) {
 
 const bot = new TelegramBot(botToken, { polling: true });
 
+function loadCommands() {
+  const commandFiles = fs.readdirSync(path.join(__dirname, 'commands')).filter(file => file.endsWith('.js'));
+
+  for (const file of commandFiles) {
+    const command = require(path.join(__dirname, 'commands', file));
+    commands.push(command);
+  }
+}
+
+loadCommands();
+
+
 bot.onText(/(.+)/, (msg) => {
-    const prefixes = global.prefix || ['/'];
-    const isCmd = msg.text && prefixes.some(prefix => msg.text.toLowerCase().startsWith(prefix.toLowerCase()));
-    const command = isCmd
-      ? msg.text.split(' ')[0].slice(prefixes.find(prefix => msg.text.toLowerCase().startsWith(prefix.toLowerCase())).length).toLowerCase()
-      : msg.text.trim().split(' ')[0].toLowerCase();
+  const prefixes = global.prefix || ['/'];
+  const isCmd = msg.text && prefixes.some(prefix => msg.text.toLowerCase().startsWith(prefix.toLowerCase()));
+  const command = isCmd
+    ? msg.text.split(' ')[0].slice(prefixes.find(prefix => msg.text.toLowerCase().startsWith(prefix.toLowerCase())).length).toLowerCase()
+    : msg.text.trim().split(' ')[0].toLowerCase();
 
-    const chatId = msg.chat.id;
+  const chatId = msg.chat.id;
 
-    switch (command) {
-        case 'start':
-            try {
-                bot.sendMessage(chatId, 'Hola, usa /menu para obtener los comandos', { 
-                    reply_markup: { 
-                        inline_keyboard: [
-                            [
-                                { text: 'Menu', callback_data: 'Menu' },
-                                { text: 'Juegos', callback_data: 'Juegos' } 
-                            ]
-                        ]
-                    }
-                });
-            } catch (e) {
-                throw e;
-            }
-            break;
-        case 'ayuda':
-        case 'help':
-            bot.sendMessage(chatId, '¡Bienvenido! Puedes usar comandos como /start y otros.');
-            break;
-        default:
-            bot.sendMessage(chatId, 'Comando no reconocido. ¡Prueba /ayuda para obtener ayuda!');
-    }
+  const commandInfo = commands.find(cmd => cmd.commands.includes(command));
+  if (commandInfo) {
+    commandInfo.execute(bot, chatId);
+  } else {
+    bot.sendMessage(chatId, 'Comando no reconocido. ¡Prueba /ayuda para obtener ayuda!');
+  }
 });
 
 bot.on('callback_query', (callbackQuery) => {
