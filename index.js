@@ -1,15 +1,22 @@
-require('dotenv').config()
-const { Telegraf } = require('telegraf');
+const TelegramBot = require('node-telegram-bot-api');
 
-const bot = new Telegraf(process.env.BOT_TOKEN);
+// Obtén el token desde la variable de entorno
+const botToken = process.env.BOT_TOKEN;
 
-bot.on('message', (ctx) => {
-    
+if (!botToken) {
+  console.error('No se proporcionó el token del bot. Asegúrate de establecer la variable de entorno BOT_TOKEN.');
+  process.exit(1);
+}
+
+const bot = new TelegramBot(botToken, { polling: true });
+
+// Manejar comandos
+bot.onText(/\/start/, (msg) => {
+  const chatId = msg.chat.id;
+  bot.sendMessage(chatId, '¡Hola! Soy tu bot de Telegram.');
 });
 
-bot.command('start', (ctx) => {
-  ctx.reply('Welcome to my bot!');
+bot.on('message', (msg) => {
+  const chatId = msg.chat.id;
+  bot.sendMessage(chatId, 'Recibí tu mensaje: ' + msg.text);
 });
-
-
-bot.startPolling();
