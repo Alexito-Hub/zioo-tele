@@ -26,24 +26,6 @@ function loadCommands() {
 loadCommands();
 
 
-bot.onText(/(.+)/, (msg) => {
-    const prefixes = global.prefix || ['/'];
-    const isCmd = msg.text && prefixes.some(prefix => msg.text.toLowerCase().startsWith(prefix.toLowerCase()));
-    const command = isCmd
-      ? msg.text.split(' ')[0].slice(prefixes.find(prefix => msg.text.toLowerCase().startsWith(prefix.toLowerCase())).length).toLowerCase()
-      : msg.text.trim().split(' ')[0].toLowerCase();
-    
-    const chatId = msg.chat.id;
-    
-    const commandInfo = commands.find(cmd => cmd.commands.includes(command));
-    
-    if (commandInfo) {
-        commandInfo.execute(bot, chatId);
-        
-    } 
-});
-
-// ... (código previo)
 
 bot.onText(/(.+)/, async (msg) => {
   const prefixes = global.prefix || ['/'];
@@ -61,8 +43,6 @@ bot.onText(/(.+)/, async (msg) => {
       } catch (error) {
         console.error('Error al ejecutar el comando:', error);
       }
-    } else {
-      bot.sendMessage(msg.chat.id, 'Comando no reconocido. ¡Prueba /ayuda para obtener ayuda!');
     }
   }
 });
