@@ -12,31 +12,45 @@ const bot = new TelegramBot(botToken, { polling: true });
 
 bot.onText(/\/start/, (msg) => {
   const chatId = msg.chat.id;
+
+  // Definir el teclado en línea con dos botones
   const keyboard = {
-    resize_keyboard: true,
-    keyboard: [
-      ['Menu', 'Configuración'],
-    ],
+    inline_keyboard: [
+      [
+        { text: 'Botón 1', callback_data: 'button1' },
+        { text: 'Botón 2', callback_data: 'button2' }
+      ],
+      [
+        { text: 'Configuración', callback_data: 'settings' }
+      ]
+    ]
   };
 
-  const options = {
-    reply_markup: JSON.stringify(keyboard),
-  };
+  // Convertir el teclado en formato JSON
+  const replyMarkup = JSON.stringify(keyboard);
 
-  bot.sendMessage(chatId, '¡Hola! Soy tu bot de Telegram.', options);
+  // Enviar el mensaje con el teclado en línea
+  bot.sendMessage(chatId, '¡Hola! Soy tu bot de Telegram.', { reply_markup: replyMarkup });
 });
 
-bot.on('message', (msg) => {
-  const chatId = msg.chat.id;
-  const messageText = msg.text.toLowerCase();
+// Manejar los eventos de los botones
+bot.on('callback_query', (query) => {
+  const chatId = query.message.chat.id;
+  const data = query.data;
 
-  if (messageText === 'menu') {
-    // Lógica para manejar el botón de menú
-    bot.sendMessage(chatId, 'Seleccionaste el botón de Menú.');
-  } else if (messageText === 'configuración') {
-    // Lógica para manejar el botón de configuración
-    bot.sendMessage(chatId, 'Seleccionaste el botón de Configuración.');
-  } else {
-    bot.sendMessage(chatId, 'Recibí tu mensaje: ' + msg.text);
+  // Manejar la lógica según el botón presionado
+  switch (data) {
+    case 'button1':
+      bot.sendMessage(chatId, 'Presionaste el Botón 1');
+      break;
+    case 'button2':
+      bot.sendMessage(chatId, 'Presionaste el Botón 2');
+      break;
+    case 'settings':
+      bot.sendMessage(chatId, 'Aquí puedes configurar tu bot.');
+      break;
+    default:
+      // Manejar cualquier otro caso si es necesario
+      break;
   }
 });
