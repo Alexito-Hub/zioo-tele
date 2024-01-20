@@ -14,47 +14,38 @@ bot.onText(/\/start/, (msg) => {
   const chatId = msg.chat.id;
   const options = {
     reply_markup: {
-      keyboard: [
-        ['Botón 1', 'Botón 2'],
-        ['Configuración'],
-      ],
-      resize_keyboard: true,
-    },
+      inline_keyboard: [
+        [
+          { text: 'Opción 1', callback_data: 'opcion1' },
+          { text: 'Opción 2', callback_data: 'opcion2' }
+        ],
+        [
+          { text: 'Configuración', callback_data: 'configuracion' }
+        ]
+      ]
+    }
   };
 
   bot.sendMessage(chatId, '¡Hola! Soy tu bot de Telegram.', options);
 });
 
-bot.onText(/Botón 1/, (msg) => {
-  const chatId = msg.chat.id;
-  bot.sendMessage(chatId, 'Has seleccionado Botón 1.');
-});
+// Manejar las interacciones de los botones
+bot.on('callback_query', (callbackQuery) => {
+  const chatId = callbackQuery.message.chat.id;
+  const messageId = callbackQuery.message.message_id;
+  const data = callbackQuery.data;
 
-bot.onText(/Botón 2/, (msg) => {
-  const chatId = msg.chat.id;
-  bot.sendMessage(chatId, 'Has seleccionado Botón 2.');
-});
-
-bot.onText(/Configuración/, (msg) => {
-  const chatId = msg.chat.id;
-  const options = {
-    reply_markup: {
-      inline_keyboard: [
-        [{ text: 'Opción 1', callback_data: 'opcion1' }],
-        [{ text: 'Opción 2', callback_data: 'opcion2' }],
-      ],
-    },
-  };
-
-  bot.sendMessage(chatId, 'Selecciona una opción de configuración:', options);
-});
-
-bot.on('callback_query', (query) => {
-  const chatId = query.message.chat.id;
-
-  if (query.data === 'opcion1') {
-    bot.editMessageText('Has seleccionado Opción 1.', { chat_id: chatId, message_id: query.message.message_id });
-  } else if (query.data === 'opcion2') {
-    bot.editMessageText('Has seleccionado Opción 2.', { chat_id: chatId, message_id: query.message.message_id });
+  // Editar el mensaje según la opción seleccionada
+  switch (data) {
+    case 'opcion1':
+      bot.editMessageText('Seleccionaste Opción 1', { chat_id: chatId, message_id: messageId });
+      break;
+    case 'opcion2':
+      bot.editMessageText('Seleccionaste Opción 2', { chat_id: chatId, message_id: messageId });
+      break;
+    case 'configuracion':
+      bot.editMessageText('Configuración no disponible actualmente.', { chat_id: chatId, message_id: messageId });
+      break;
+    // Agrega más casos según las opciones del menú
   }
 });
