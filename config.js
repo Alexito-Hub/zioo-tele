@@ -1,1 +1,1 @@
-global.prefix = ["!", "?", "."]
+global.prefix = ["/", "!", "?", "."]
