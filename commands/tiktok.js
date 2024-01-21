@@ -4,7 +4,7 @@ const { fetchJson } = require('../lib/utils');
 module.exports = {
     name: 'tiktok',
     description: 'Descarga videos e imágenes de TikTok',
-    aliases: ['tiktok', 'tt'],
+    commands: ['tiktok', 'tt'],
 
     async execute(bot, chatId, messageId, args) {
         try {
