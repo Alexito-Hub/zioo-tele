@@ -1,62 +1,51 @@
-require('./config')
-require('dotenv').config();
+const fs = require('fs');
+const path = require('path');
 const TelegramBot = require('node-telegram-bot-api');
-const fs = require('fs')
-const path = require('path')
-const commands = [];
+require('./config');
+require('dotenv').config();
 
 const botToken = process.env.BOT_TOKEN;
 
 if (!botToken) {
-    console.log('No se proporcionó el token del bot. Asegúrate de establecer la variable de entorno BOT_TOKEN.');
+    console.error('No se proporcionó el token del bot. Asegúrate de establecer la variable de entorno BOT_TOKEN.');
     process.exit(1);
 }
 
 const bot = new TelegramBot(botToken, { polling: true });
+const commands = loadCommands();
 
 function loadCommands() {
     const commandFiles = fs.readdirSync(path.join(__dirname, 'commands')).filter(file => file.endsWith('.js'));
-    
-    for (const file of commandFiles) {
-        const command = require(path.join(__dirname, 'commands', file));
-        commands.push(command);
-    }
+    return commandFiles.map(file => require(path.join(__dirname, 'commands', file)));
 }
 
-loadCommands();
-
-
-bot.onText(/(.+)/, (msg) => {
+function processTextMessage(msg) {
     const prefixes = global.prefix || ['/'];
     const isCmd = msg.text && prefixes.some(prefix => msg.text.toLowerCase().startsWith(prefix.toLowerCase()));
     const command = isCmd
-      ? msg.text.split(' ')[0].slice(prefixes.find(prefix => msg.text.toLowerCase().startsWith(prefix.toLowerCase())).length).toLowerCase()
-      : msg.text.trim().split(' ')[0].toLowerCase();
+        ? msg.text.split(' ')[0].slice(prefixes.find(prefix => msg.text.toLowerCase().startsWith(prefix.toLowerCase())).length).toLowerCase()
+        : msg.text.trim().split(' ')[0].toLowerCase();
     
-    const chatId = msg.chat.id;
-    const messageId = msg.message_id
-    
+    const { chat, message_id } = msg;
     const commandInfo = commands.find(cmd => cmd.commands.includes(command));
     
     if (commandInfo) {
-        commandInfo.execute(bot, chatId, messageId);
-        
+        commandInfo.execute(bot, chat.id, message_id);
     }
-});
+}
 
-
+bot.onText(/(.+)/, processTextMessage);
 
 bot.on('callback_query', (callbackQuery) => {
-    const chatId = callbackQuery.message.chat.id;
-    const messageId = callbackQuery.message.message_id;
-    const data = callbackQuery.data;
+    const { message, data } = callbackQuery;
+    const { chat } = message;
 
     switch (data) {
         case 'Menu':
-            bot.editMessageText('No se agregaron comandos a la lista de Menu', { chat_id: chatId, message_id: messageId });
+            bot.editMessageText('No se agregaron comandos a la lista de Menú', { chat_id: chat.id, message_id: message.message_id });
             break;
         case 'Juegos':
-            bot.editMessageText('Los juegos no están disponibles por el momento', { chat_id: chatId, message_id: messageId });
+            bot.editMessageText('Los juegos no están disponibles por el momento', { chat_id: chat.id, message_id: message.message_id });
             break;
     }
 });
