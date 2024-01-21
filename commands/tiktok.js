@@ -1,4 +1,4 @@
-const { fetchJson } = require('../../lib/utils');
+const { fetchJson } = require('../lib/utils');
 
 module.exports = {
     name: 'tiktok',
