@@ -1,21 +1,24 @@
 // commands/responseTime.js
 
 module.exports = {
-  name: "Ping",
-  description: "Muestra el tiempo de respuesta en milisegundos",
-  commands: ["ping"],
+  name: "responseTime",
+  description: "Muestra el tiempo de respuesta en segundos",
+  commands: ["/responsetime"],
   async execute(bot, chatId, messageId) {
-    const startTime = new Date();
+    const startTime = process.hrtime();
     
     try {
       const responseMessage = await bot.sendMessage(chatId, 'Calculando el tiempo de respuesta...');
-      const endTime = new Date();
-      const responseTime = endTime - startTime;
+      
+      setTimeout(async () => {
+        const endTime = process.hrtime(startTime);
+        const responseTimeInSeconds = (endTime[0] + endTime[1] / 1e9).toFixed(4);
 
-      await bot.editMessageText(`El tiempo de respuesta es de ${responseTime} milisegundos.`, {
-        chat_id: chatId,
-        message_id: responseMessage.message_id
-      });
+        await bot.editMessageText(`El tiempo de respuesta es de ${responseTimeInSeconds} segundos.`, {
+          chat_id: chatId,
+          message_id: responseMessage.message_id
+        });
+      }, 1000); // Espera 1 segundo antes de enviar el segundo mensaje
     } catch (e) {
       throw e;
     }
