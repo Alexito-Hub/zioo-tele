@@ -49,3 +49,17 @@ bot.on('callback_query', (callbackQuery) => {
             break;
     }
 });
+
+
+
+bot.on('new_chat_members', (msg) => {
+    const chatId = msg.chat.id;
+    const newMembers = msg.new_chat_members;
+
+    newMembers.forEach((member) => {
+        const welcomeMessage = `¡Bienvenido al grupo, ${member.first_name}! 🎉`;
+        bot.sendMessage(chatId, welcomeMessage);
+    });
+});
+
+console.log('El bot está activo y esperando eventos.');
