@@ -31,10 +31,8 @@ module.exports = {
                         });
                     }
                 }
-                await bot.sendMessage(chatId, '✅', { reply_to_message_id: messageId });
             } else {
                 console.log('Error al obtener información');
-                await bot.sendMessage(chatId, '❎', { reply_to_message_id: messageId });
                 await bot.sendMessage(chatId, 'No se pudo descargar', { reply_to_message_id: messageId });
             }
         } catch (e) {
