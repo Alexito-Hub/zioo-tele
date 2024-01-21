@@ -35,11 +35,11 @@ bot.onText(/(.+)/, (msg) => {
     
     const chatId = msg.chat.id;
     const messageId = msg.message_id
-    
+    const args = msg.text.split(' ').slice(1)
     const commandInfo = commands.find(cmd => cmd.commands.includes(command));
     
     if (commandInfo) {
-        commandInfo.execute(bot, chatId, messageId);
+        commandInfo.execute(bot, chatId, messageId, args);
         
     }
 });
